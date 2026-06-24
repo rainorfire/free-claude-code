@@ -220,6 +220,58 @@ print(result.stdout)
 
 > ℹ️ 首次在全新机器/全新配置目录运行时，可能出现一次性目录信任（trust）提示。完全无人值守的脚本场景建议在 REPL 里先运行一次完成信任，或使用 `--dangerously-skip-permissions` 跳过权限确认。该信任机制与“登录”无关。
 
+## 📦 Linux tar 包部署（多台机器）
+
+适合在一台 Linux 构建机上打包，再分发到其他 Linux 服务器给 Python 脚本调用。
+
+### 构建机（必须是 Linux x64 / arm64）
+
+```bash
+git clone git@github.com:rainorfire/free-claude-code.git
+cd free-claude-code
+
+# 安装 Bun（仅构建时需要）
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
+
+# 一键打包 → release/free-claude-code-linux-<arch>-v<version>.tar.gz
+bun run pack:linux
+```
+
+产物示例：`release/free-claude-code-linux-x64-v2.6.0.tar.gz`
+
+### 目标机器（只需 Node.js 18+，无需 Bun / 无需登录）
+
+```bash
+# 拷贝 tar 包到目标机
+scp release/free-claude-code-linux-x64-v2.6.0.tar.gz user@server:/tmp/
+
+# 安装
+ssh user@server
+tar xzf /tmp/free-claude-code-linux-x64-v2.6.0.tar.gz
+cd free-claude-code-linux-x64-v2.6.0
+sudo ./install.sh
+
+# 验证
+export ANTHROPIC_API_KEY=sk-ant-xxx
+claude --version
+echo "say hi" | claude -p
+```
+
+自定义安装路径：
+
+```bash
+INSTALL_DIR=$HOME/claude-code ./install.sh
+```
+
+卸载：
+
+```bash
+sudo ./install.sh --uninstall
+```
+
+> ⚠️ **必须在 Linux 上构建 tar 包**（ripgrep 等二进制与平台绑定）。在 macOS 上构建的包无法在 Linux 上使用。
+
 ## Feature Flags
 
 所有功能开关通过 `FEATURE_<FLAG_NAME>=1` 环境变量启用，例如：

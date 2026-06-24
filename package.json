@@ -66,6 +66,7 @@
     "docs:dev": "npx mintlify dev",
     "typecheck": "tsc --noEmit",
     "precheck": "bun run typecheck && bun run check:fix && bun test",
+    "pack:linux": "bash scripts/package-linux-tar.sh",
     "rcs": "bun run scripts/rcs.ts"
   },
   "dependencies": {

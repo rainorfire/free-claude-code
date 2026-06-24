@@ -2,6 +2,7 @@ import { readdir, readFile, writeFile, cp } from 'fs/promises'
 import { join } from 'path'
 import { getMacroDefines } from './scripts/defines.ts'
 import { DEFAULT_BUILD_FEATURES } from './scripts/defines.ts'
+import { patchDistForNode } from './scripts/patch-dist-for-node.ts'
 
 const outdir = 'dist'
 
@@ -79,8 +80,11 @@ for (const file of files) {
 }
 BUN_DESTRUCTURE.lastIndex = 0
 
+// Step 3b: `using _` → `const _` for Node.js 20 compatibility
+const usingPatched = await patchDistForNode(outdir)
+
 console.log(
-  `Bundled ${result.outputs.length} files to ${outdir}/ (patched ${patched} for import.meta.require, ${bunPatched} for Bun destructure)`,
+  `Bundled ${result.outputs.length} files to ${outdir}/ (patched ${patched} for import.meta.require, ${bunPatched} for Bun destructure, ${usingPatched} for using declarations)`,
 )
 
 // Step 4: Copy native .node addon files (audio-capture) and vendored binaries (ripgrep)
